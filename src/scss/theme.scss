@@ -1,0 +1,13 @@
+.form-control {
+  border: none;
+}
+
+.form-control:focus {
+  border-bottom: 1px black !important;
+
+  box-shadow: inset 0px 0px 15px -5px #efefef;
+}
+
+body {
+  overflow: hidden; /* Hide scrollbars */
+}
