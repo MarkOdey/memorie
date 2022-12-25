@@ -27,9 +27,14 @@
 import Memori from "../services/Memori";
 export default {
   data: () => {
+
+    console.log('scripts', Memori.scripts);
     return {
       scripts: Memori.scripts,
     };
+  },
+  computed:{
+    
   },
   methods: {
     runScript: (script) => {

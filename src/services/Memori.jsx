@@ -8,9 +8,7 @@ class Memori extends EventTarget {
 
     this.scripts = reactive([]);
 
-    this.playScripts = reactive([]);
-   
-
+    
     this.script = reactive({
       name: "hello world",
       key: "hello world",
@@ -31,6 +29,10 @@ class Memori extends EventTarget {
         this.tic();
       }
     }, 100);
+  }
+
+  addToPlaylist(){
+    
   }
 
   tic() {
@@ -62,15 +64,14 @@ class Memori extends EventTarget {
 
     this.tryInjectIframe();
 
-    console.log('at runscript', script)
+
     this.iframe.contentWindow.postMessage(code, 'http://localhost:3000');
     //return Function('"use strict";return (' + code + ")")();
   }
 
   write(script) {
     try {
-      //this.runScript(script);
-      console.log(script);
+
       const index = this.getIndex(script.key);
 
 
@@ -119,11 +120,13 @@ class Memori extends EventTarget {
   }
 
   injectIframe() {
+
+    console.log('DO I REACH HERE?')
     let iframe = document.getElementById("sandbox");
     if (!iframe) {
       iframe = document.createElement("iframe");
       iframe.sandbox =
-        "allow-same-origin allow-scripts allow-popups allow-forms";
+        "allow-same-origin allow-scripts allow-popups allow-forms camera microphone";
       iframe.id = "sandbox";
 
       iframe.className = "fixed-top w-100 h-100";
@@ -143,17 +146,26 @@ class Memori extends EventTarget {
       this.iframe = iframe;
     }
 
+ 
+
     try {
+
+      console.log('loading scripts')
       this.scripts = reactive(JSON.parse(localStorage.getItem("scripts")));
+
       if (this.scripts == null) {
         this.scripts = reactive([]);
       }
     } catch (e) {
+
+      console.log(e);
       this.scripts = reactive([]);
     }
   }
 
   load(script) {
+
+
     if (!this.script) {
        this.script = reactive(script);
     } else {
@@ -180,7 +192,7 @@ class Memori extends EventTarget {
     this.injectIframe();
 
     if (this.scripts && this.scripts.length > 0) {
-      console.log("should not tic");
+
       this.script.name = this.scripts[0].name;
       this.script.code = this.scripts[0].code;
       this.script.key = this.scripts[0].key;

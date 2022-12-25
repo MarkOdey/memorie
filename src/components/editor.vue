@@ -1,5 +1,5 @@
 <template>
-  <div class="box">
+  <div ref="box" class="box">
     <div class="top-menu">
 
       <div class="d-inline-flex input-group">
@@ -24,6 +24,10 @@
         <button class="btn" @click="runScript()">
           <i class="fas fa-play"></i>
         </button>
+        <button class="btn" @click="runScript()">
+
+        </button>
+        <uploader></uploader>
         <button class="btn">           
           <i  @click="duplicateScript()" class="far fa-clone"></i>
         </button>
@@ -35,10 +39,12 @@
 <script>
 import Memori from "../services/Memori";
 import MonacoEditor from "monaco-editor-vue3";
+import Uploader from './uploader.vue';
 
 export default {
   components: {
     MonacoEditor,
+    Uploader,
   },
   data() {
     console.log("at data", Memori.editScript);
@@ -71,6 +77,15 @@ export default {
 
     },
     editorDidMount(editor) {
+
+
+      new ResizeObserver((res)=>{
+        console.log(this.$refs.box.offsetHeight);
+        editor.layout({ width:this.$refs.editor.offsetWidth, height:this.$refs.editor.offsetHeight} );
+   
+      }).observe(this.$refs.box);
+
+
       window.onresize = () => {
         console.log('Window resize', this.$refs.editor);
         editor.layout({ width:this.$refs.editor.offsetWidth, height:this.$refs.editor.offsetHeight} );
@@ -105,6 +120,7 @@ export default {
 .content{
   flex-grow: 1;
    width:100%;
+  height:100px;
 }
 
 .bottom-menu{
@@ -114,6 +130,7 @@ export default {
 .editor {
   width: 100%;
   height:100%;
+  position:relative;
 }
 
 .form-control{
