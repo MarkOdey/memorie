@@ -29,9 +29,10 @@ export default {
   data: () => {
 
     console.log('scripts', Memori.scripts);
-    return {
-      scripts: Memori.scripts,
-    };
+
+  },
+  props:{
+    scripts:Array
   },
   computed:{
     
@@ -40,7 +41,7 @@ export default {
     runScript: (script) => {
       console.log("test", script);
       Memori.runScript(script);
-       Memori.load(script);
+      Memori.load(script);
     },
     editScript: (script) => {
       Memori.edit(script);

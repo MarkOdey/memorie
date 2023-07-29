@@ -8,6 +8,9 @@
 
   import Memori from '../services/Memori.jsx';
 
+  import addImage from '../scripts/addImage.js';
+
+
   export default {
     data: function () {
       return {};
@@ -54,46 +57,14 @@
             reader.onload = () => resolve(reader.result);
             reader.onerror = (error) => {reject(error)};
           });
+          
+          const  file =await event.currentTarget.files[0];
+          const dataBase64 = await toBase64(file);
 
+          const filename= file.name;
 
-          const dataBase64 = await toBase64(event.currentTarget.files[0]);
+          const script =addImage({name:file.name, dataBase64, });
 
-          console.log(dataBase64);
-
-          const script ={
-            name: "Add Image",
-            key: "add image",
-            code: `
-            
-              var canvas = document.getElementById('canvas');
-              if(!canvas){
-              
-                canvas=  document.createElement('canvas');
-                canvas.id="canvas";
-                document.body.append(canvas);
-
-                canvas.width=window.innerWidth;
-                canvas.height=window.innerHeight;
-
-                canvas.style.position="absolute";
-                canvas.style.top="0";
-                canvas.style.left="0";
-              }
-
-            
-
-            var image = new Image();
-            image.onload = function() {
-              var ctx = canvas.getContext("2d");
-              ctx.drawImage(image, 0, 0);
-            };
-            image.src = "${dataBase64}";
-                    
-                          
-              
-
-          `,
-          };
           Memori.runScript(script);
 
           Memori.write(script);

@@ -2,8 +2,6 @@ const script = {
   name: "Turn on camera",
   key: "turn on camera",
   code: `
-  
-  
 
   const constraints = {
     audio: true,

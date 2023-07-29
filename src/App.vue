@@ -1,10 +1,10 @@
 <template>
-  <div class="cover"></div>
+  <div ref="cover" class="cover"></div>
   <div class="main">
 
 
 
-    <vue-resizable  ref="resizer" :fitParent="true" :disableAttributes="['t']" @resize:end="endResize">
+    <vue-resizable :height="editorHeight" :top="editorTop" class="resizer" ref="resizer" :fitParent="true"  @resize:start="startResize" @resize:end="endResize">
 
     <div ref="menu" class="menu">
 
@@ -13,8 +13,11 @@
         <i @click="play" class="far fa-play-circle"></i>
         <i @click="pause" class="far fa-pause-circle"></i>
         <i @click="cross" class="fas fa-dna"></i>
+        <i @click="clearAll" class="fas fa-trash"></i>
         
       </div>
+
+
 
 
       <div class="middle">
@@ -22,9 +25,25 @@
           <div class="editor">
             <editor></editor>
           </div>
-          <div class="list">
-            <script-list></script-list>
+
+          <div class="right">
+            
+            <ul>
+              <li>editor</li>
+              <li>scripts</li>
+            </ul>
+
+            <div class="list">
+              <script-list :scripts="scripts"></script-list>
+            </div>
+
+
+            <div class="list">
+              <script-list :scripts="editorScripts"></script-list>
+            </div>
+
           </div>
+ 
     
 
       </div>
@@ -36,7 +55,6 @@
         <i class="fa-solid fa-code"></i>
       </div>
     </div>
-
   </div>
 
 </vue-resizable>
@@ -60,16 +78,40 @@ export default {
     Memori.start();
   },
   mounted() {
-    this.$refs.resizer.style.height=Ui.editorHeight+"px";
-    this.$refs.resizer.style.top=Ui.editorTop+"px";
+    //this.$refs.resizer.style.height=Ui.editorHeight+"px";
+    //this.$refs.resizer.style.top=Ui.editorTop+"px";
 
 
   },
   computed:{
 
+    scripts(){
+      return Memori.scripts;
+    },
+    editorScripts(){
+      return Memori.editorScripts;
+    },
+
+    editorTop(){
+      return Ui.editorTop;
+    },
+    editorHeight(){
+
+      console.log(window.innerHeight);
+      return window.innerHeight-Ui.editorTop;
+    }
+
   },
   methods:{
-    endResize:(res)=>{
+    endResize(res){
+      this.$refs.cover.style.pointerEvents ="none";
+      console.log(res,'this is a end resize event!!!');
+      Ui.editorHeight=res.height;
+      Ui.editorTop  = res.top;
+    },
+    startResize(res){
+
+      this.$refs.cover.style.pointerEvents ="auto";
       console.log(res,'this is a end resize event!!!');
       Ui.editorHeight=res.height;
       Ui.editorTop  = res.top;
@@ -84,6 +126,9 @@ export default {
     },
     cross:()=>{
       console.log('pause');
+    },
+    clearAll:()=>{
+      Memori.clearAll();
     }
   },
   components: {
@@ -100,10 +145,10 @@ export default {
   position:absolute;
   height: 100%;
   width: 100%;
-
+  pointer-events: none;
 }
 .main{
-  
+  pointer-events: none;
   widows: 100%;
   position: absolute;
   bottom: 0;
@@ -117,12 +162,13 @@ export default {
 }
 
   .menu{
-
+    pointer-events: auto;
     width:100%;
     height:100%;
     display:flex;
     flex-flow:column;
 
+    background:white;
   }
 
   .middle {
@@ -135,15 +181,23 @@ export default {
       
     }
 
-    .list{
-
+    .right{
       width: 300px;
       overflow: scroll;
       height: 100%;
+    }
+
+    .list{
+
+ 
       
     }
 
     
+  }
+
+  .resizer {
+    pointer-events: auto;
   }
 
   .top {

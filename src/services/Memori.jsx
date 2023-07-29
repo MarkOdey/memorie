@@ -1,34 +1,53 @@
 import { reactive } from "@vue/reactivity";
 
-class Memori extends EventTarget {
+import addImage from '../scripts/addImage';
 
+
+
+
+class Memori extends EventTarget {
 
   constructor() {
     super();
 
-    this.scripts = reactive([]);
+    
 
     
+
+    this.user = reactive({
+    });
+
+    this.scripts = reactive([]);
+
+
+    
+
     this.script = reactive({
       name: "hello world",
       key: "hello world",
+      owner:null,
       code: "console.log('hello world.')",
     });
 
     this.editScript = reactive({
       name: "hello world",
       key: "hello world",
+      owner:null,
       code: "console.log('hello world.')",
     });
 
     
     this.isPlaying = false;
 
-    setInterval(()=>{
+   setInterval(()=>{
       if(this.isPlaying) {
         this.tic();
       }
     }, 100);
+
+    
+
+    
   }
 
   addToPlaylist(){
@@ -51,9 +70,32 @@ class Memori extends EventTarget {
     }
   }
 
+  run({name}){
+
+
+    const script = this.scripts.find((script)=>{
+
+      if(script.name){
+
+        console.log(script)
+        return script.name.match(name);
+      
+      }
+
+      
+    });
+    
+    if(!script){
+      return;
+    }
+
+    this.runScript(script);
+  }
+
   runScript(script) {
 
     console.log(script);
+
     let code;
     if (typeof script == "string") {
       code = script;
@@ -78,12 +120,15 @@ class Memori extends EventTarget {
       if (index == -1) {
         this.scripts.push({ code: script.code, key: script.key, name: script.name });
       } else {
-        this.scripts[index] = { code: script.code, key: script.key, name: script.name };
+        this.scripts[index] = { code: script.code, key: script.key, name: script.name, owner: script.owner };
       }
 
       const scripts = JSON.stringify(this.scripts);
 
+
       localStorage.setItem("scripts", scripts);
+
+      this.dispatchEvent(new Event('saved'));
 
     } catch (error) {
       console.log("error running script.", error);
@@ -92,7 +137,7 @@ class Memori extends EventTarget {
 
   duplicate(script) {
 
-    this.write({ key: Date.now(), name: script.name, code: script.code });
+    this.write({ key: Date.now(), name: script.name,  code: script.code });
 
 
   }
@@ -107,8 +152,6 @@ class Memori extends EventTarget {
 
   remove(key) {
 
-    console.log(key);
-
     const index = this.getIndex(key);
 
     if(index!==-1){
@@ -121,7 +164,6 @@ class Memori extends EventTarget {
 
   injectIframe() {
 
-    console.log('DO I REACH HERE?')
     let iframe = document.getElementById("sandbox");
     if (!iframe) {
       iframe = document.createElement("iframe");
@@ -136,7 +178,7 @@ class Memori extends EventTarget {
       iframe.style.zIndex = "-1";
 
       iframe.srcdoc =
-        "<!-- frame.html --><!DOCTYPE html><html style=\"overflow:hidden;\"><head><title></title><script>window.addEventListener('message', function (e) {var mainWindow = e.source;var result = '';try {result = eval(e.data); } catch (e) {result = 'eval() threw an exception.';}mainWindow.postMessage(result, event.origin);});</script></head></html>";
+        "<!-- frame.html --><!DOCTYPE html><html style=\"overflow:hidden;\"><head><title></title><script>window.addEventListener('message', function (e) {var mainWindow = e.source;var result = '';try {result = eval(e.data); } catch (e) {throw e}});</script></head></html>";
       iframe.onload = () => {
         this.window = iframe.contentWindow;
       };
@@ -144,13 +186,37 @@ class Memori extends EventTarget {
       document.body.appendChild(iframe);
 
       this.iframe = iframe;
+
+      window.addEventListener('message', (message)=>{
+          
+          if (message.source !== this.window) {
+            return; // Skip message in this event listener
+        }
+
+        console.log('at send event!', message, message.data);
+       if (message.data.action=='run') {
+
+          this.run(message.data);
+
+        }
+    
+      });
     }
 
  
+    try {
+      this.user = reactive(JSON.parse(localStorage.getItem("user")));
+
+    } catch(e){
+      this.user = reactive({
+        user:'markodey',
+        id:'markodey'
+      })
+    }
 
     try {
 
-      console.log('loading scripts')
+      console.log('Loading scripts')
       this.scripts = reactive(JSON.parse(localStorage.getItem("scripts")));
 
       if (this.scripts == null) {
@@ -158,8 +224,9 @@ class Memori extends EventTarget {
       }
     } catch (e) {
 
-      console.log(e);
+      
       this.scripts = reactive([]);
+      console.warn(e);
     }
   }
 
@@ -186,6 +253,7 @@ class Memori extends EventTarget {
 
 
   }
+
   start() {
     console.log("started");
 
@@ -209,6 +277,10 @@ class Memori extends EventTarget {
 
   pause(){
     this.isPlaying = false
+  }
+
+  clearAll(){
+    localStorage.setItem("scripts", []);
   }
 
 
