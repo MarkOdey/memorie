@@ -40,12 +40,6 @@
 
       </div>
 
-
-    <div class="bottom">
-      <div class="menu">
-        <i class="fa-solid fa-code"></i>
-      </div>
-    </div>
   </div>
 
 </vue-resizable>
@@ -56,12 +50,12 @@
 </template>
 
 <script>
-import Memori from "./services/Memori.jsx";
-import Ui from "./services/Ui.jsx";
+import VueResizable from 'vue-resizable';
+import download from "./components/download.vue";
 import editor from "./components/editor.vue";
 import scriptList from "./components/scriptList.vue";
-import download from "./components/download.vue";
-import VueResizable from 'vue-resizable'
+import Memori from "./services/Memori.jsx";
+import Ui from "./services/Ui.jsx";
 
 export default {
   name: "App",
@@ -200,7 +194,6 @@ export default {
 
   .top {
     width:100%;
-    height: 20px
   }
 
   .bottom {

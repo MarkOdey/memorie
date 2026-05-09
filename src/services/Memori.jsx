@@ -161,8 +161,8 @@ class Memori extends EventTarget {
     let iframe = document.getElementById("sandbox");
     if (!iframe) {
       iframe = document.createElement("iframe");
-      iframe.sandbox =
-        "allow-same-origin allow-scripts allow-popups allow-forms camera microphone";
+      iframe.sandbox = "allow-same-origin allow-scripts allow-popups allow-forms";
+      iframe.allow = "camera; microphone; fullscreen 'none'";
       iframe.id = "sandbox";
 
       iframe.className = "fixed-top w-100 h-100";
@@ -171,8 +171,27 @@ class Memori extends EventTarget {
       iframe.style.height = "100%";
       iframe.style.zIndex = "-1";
 
-      iframe.srcdoc =
-        "<!-- frame.html --><!DOCTYPE html><html style=\"overflow:hidden;\"><head><title></title><script>window.addEventListener('message', function (e) {var result = '';try {result = eval(e.data); } catch (err) {window.parent.postMessage({action:'error',message:err.message}, '*');}});<\/script></head></html>";
+      iframe.srcdoc = `<!DOCTYPE html>
+<html style="margin:0;overflow:hidden;">
+<head><title></title></head>
+<body style="margin:0;">
+<canvas id="canvas" style="display:block;"></canvas>
+<script>
+  var canvas = document.getElementById('canvas');
+  window.canvas = canvas;
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('message', function(e) {
+    try { eval(e.data); }
+    catch(err) { window.parent.postMessage({action:'error',message:err.message},'*'); }
+  });
+<\/script>
+</body>
+</html>`;
       iframe.onload = () => {
         this.window = iframe.contentWindow;
       };
