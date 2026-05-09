@@ -1,7 +1,7 @@
 <template>
   <div class=" h-100">
     <ol class="small">
-      <li v-for="script in scripts" :key="script">
+      <li v-for="script in scripts" :key="script.key" :class="{ active: isActive(script) }">
         <span @click="loadScript(script)">{{script.name}}</span>
         <div class="button-group">
           <button class="btn">
@@ -16,7 +16,7 @@
           <button class="btn">
             <i  @click="duplicateScript(script)" class="far fa-clone"></i>
           </button>
-     
+
         </div>
       </li>
     </ol>
@@ -26,36 +26,29 @@
 <script>
 import Memori from "../services/Memori";
 export default {
-  data: () => {
-
-    console.log('scripts', Memori.scripts);
-
-  },
   props:{
     scripts:Array
   },
-  computed:{
-    
-  },
   methods: {
-    runScript: (script) => {
-      console.log("test", script);
+    isActive(script) {
+      return Memori.script.key === script.key;
+    },
+    runScript(script) {
       Memori.runScript(script);
       Memori.load(script);
     },
-    editScript: (script) => {
+    editScript(script) {
       Memori.edit(script);
     },
-    duplicateScript:(script)=>{
+    duplicateScript(script) {
       Memori.duplicate(script);
     },
-    loadScript: (script) => {
-      console.log("test", script);
+    loadScript(script) {
       Memori.load(script);
     },
-    removeScript: (script) => {
-
-      Memori.remove(script);
+    removeScript(script) {
+      if (!confirm(`Delete "${script.name}"?`)) return;
+      Memori.remove(script.key);
     },
   },
 
@@ -71,6 +64,10 @@ export default {
   .btn {
     padding:0.2em;
   }
+}
+
+li.active > span {
+  font-weight: bold;
 }
 
 </style>

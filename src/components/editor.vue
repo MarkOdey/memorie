@@ -24,9 +24,6 @@
         <button class="btn" @click="runScript()">
           <i class="fas fa-play"></i>
         </button>
-        <button class="btn" @click="runScript()">
-
-        </button>
         <uploader></uploader>
         <button class="btn">           
           <i  @click="duplicateScript()" class="far fa-clone"></i>
@@ -58,15 +55,17 @@ export default {
   },
 
   created() {
-    console.log("the store", this.$data.script, this.script);
-    document.addEventListener("keydown", (e)=> {
-      if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)  && e.keyCode == 83) {
+    this._saveHandler = (e) => {
+      if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.keyCode == 83) {
         e.preventDefault();
-        // Process the event here (such as click on submit button)
         this.saveScript();
       }
-    }, false);
-        
+    };
+    document.addEventListener("keydown", this._saveHandler, false);
+  },
+
+  beforeUnmount() {
+    document.removeEventListener("keydown", this._saveHandler, false);
   },
 
   methods: {
@@ -91,8 +90,8 @@ export default {
         editor.layout({ width:this.$refs.editor.offsetWidth, height:this.$refs.editor.offsetHeight} );
       };
     },
-    duplicateScript:()=>{
-      Memori.duplicate(this.editScript);
+    duplicateScript() {
+      Memori.duplicate(Memori.editScript);
     },
     runScript: function (payload) {
       console.log("run script", Memori.editScript);

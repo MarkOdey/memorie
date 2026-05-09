@@ -1,26 +1,18 @@
-import { reactive } from "@vue/reactivity";
-
-import addImage from '../scripts/addImage';
-
+import axios from 'axios';
+import { reactive } from "vue";
 
 
 
 class Memori extends EventTarget {
 
   constructor() {
+    
     super();
-
-    
-
-    
 
     this.user = reactive({
     });
 
     this.scripts = reactive([]);
-
-
-    
 
     this.script = reactive({
       name: "hello world",
@@ -72,7 +64,6 @@ class Memori extends EventTarget {
 
   run({name}){
 
-
     const script = this.scripts.find((script)=>{
 
       if(script.name){
@@ -82,7 +73,6 @@ class Memori extends EventTarget {
       
       }
 
-      
     });
     
     if(!script){
@@ -111,7 +101,7 @@ class Memori extends EventTarget {
     //return Function('"use strict";return (' + code + ")")();
   }
 
-  write(script) {
+  async write(script) {
     try {
 
       const index = this.getIndex(script.key);
@@ -123,10 +113,15 @@ class Memori extends EventTarget {
         this.scripts[index] = { code: script.code, key: script.key, name: script.name, owner: script.owner };
       }
 
+
       const scripts = JSON.stringify(this.scripts);
 
 
       localStorage.setItem("scripts", scripts);
+
+
+      await axios.post('http://localhost:8080', { headers: { 'Access-Control-Allow-Origin' : '*',
+      'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS'},scripts});
 
       this.dispatchEvent(new Event('saved'));
 
@@ -158,8 +153,7 @@ class Memori extends EventTarget {
       this.scripts.splice(index, 1);
     }
 
-
-    localStorage.setItem("scripts", this.scripts);
+    localStorage.setItem("scripts", JSON.stringify(this.scripts));
   }
 
   injectIframe() {
@@ -178,7 +172,7 @@ class Memori extends EventTarget {
       iframe.style.zIndex = "-1";
 
       iframe.srcdoc =
-        "<!-- frame.html --><!DOCTYPE html><html style=\"overflow:hidden;\"><head><title></title><script>window.addEventListener('message', function (e) {var mainWindow = e.source;var result = '';try {result = eval(e.data); } catch (e) {throw e}});</script></head></html>";
+        "<!-- frame.html --><!DOCTYPE html><html style=\"overflow:hidden;\"><head><title></title><script>window.addEventListener('message', function (e) {var result = '';try {result = eval(e.data); } catch (err) {window.parent.postMessage({action:'error',message:err.message}, '*');}});<\/script></head></html>";
       iframe.onload = () => {
         this.window = iframe.contentWindow;
       };
@@ -189,15 +183,16 @@ class Memori extends EventTarget {
 
       window.addEventListener('message', (message)=>{
           
-          if (message.source !== this.window) {
-            return; // Skip message in this event listener
+        if (message.source !== this.window) {
+          return; // Skip message in this event listener
         }
 
-        console.log('at send event!', message, message.data);
-       if (message.data.action=='run') {
-
+        if (message.data.action === 'run') {
           this.run(message.data);
-
+        } else if (message.data.action === 'error') {
+          const ev = new Event('scripterror');
+          ev.message = message.data.message;
+          this.dispatchEvent(ev);
         }
     
       });
@@ -280,7 +275,8 @@ class Memori extends EventTarget {
   }
 
   clearAll(){
-    localStorage.setItem("scripts", []);
+    this.scripts.splice(0, this.scripts.length);
+    localStorage.setItem("scripts", JSON.stringify([]));
   }
 
 
